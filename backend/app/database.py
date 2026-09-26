@@ -14,6 +14,9 @@ def _resolve_database_url() -> str:
     Prefer a real Postgres DATABASE_URL in production.
     """
     url = settings.DATABASE_URL
+    # Render/Heroku-style URLs use postgres:// which SQLAlchemy 2.x rejects
+    if url.startswith("postgres://"):
+        url = "postgresql://" + url[len("postgres://"):]
     if url.startswith("sqlite"):
         # bodge: sqlite:///./file.db or sqlite:///abs/path or sqlite:///:memory:
         path = url.split("sqlite:///", 1)[-1]

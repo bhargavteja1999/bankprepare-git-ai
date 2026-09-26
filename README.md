@@ -68,12 +68,12 @@ with a 500. Deploy the two halves separately:
 **1. Database (required):** create a free Postgres (Neon, Supabase, or Vercel Postgres).
 Copy its connection string, e.g. `postgresql+psycopg2://user:pass@host/db`.
 
-**2. Backend:** deploy `backend/` on Render / Railway / Fly.io (persistent server, not Vercel
-Functions) with env vars:
-- `DATABASE_URL` = your Postgres URL above (SQLite only works for local dev)
-- `SECRET_KEY` = `openssl rand -hex 32` output (min 32 chars)
-- `CORS_ORIGINS` = your Vercel frontend URL, e.g. `https://bankprepare.vercel.app`
-- `GEMINI_API_KEY` = optional (AI tutor falls back to built-in answers without it)
+**2. Backend (easiest):** Render Dashboard → New → **Blueprint** → paste this repo URL.
+`render.yaml` provisions the API + Postgres automatically (you only type `CORS_ORIGINS`
+= your Vercel frontend URL, e.g. `https://bankprepare.vercel.app`; `SECRET_KEY` and
+`DATABASE_URL` are auto-filled). Manual alternative: deploy `backend/` on Railway / Fly.io
+with env vars `DATABASE_URL` (Postgres URL — SQLite is local-dev only), `SECRET_KEY`
+(`openssl rand -hex 32`, min 32 chars), `CORS_ORIGINS`, optional `GEMINI_API_KEY`.
 
 Then run migrations once: `alembic upgrade head` (or let `init_db()` create tables).
 

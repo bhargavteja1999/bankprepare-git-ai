@@ -5,7 +5,9 @@ const baseURL = import.meta.env.VITE_API_URL || "/api";
 
 const api = axios.create({
   baseURL,
-  timeout: 10000,
+  // Free-tier backends (Render/Railway) can cold-start for 20s+; 10s turns a
+  // slow-but-healthy backend into a failed login.
+  timeout: 30000,
   headers: { "Content-Type": "application/json" },
 });
 

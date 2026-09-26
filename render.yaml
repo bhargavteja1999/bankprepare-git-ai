@@ -1,0 +1,27 @@
+# One-click backend deploy on Render (free tier):
+#   Render Dashboard -> New -> Blueprint -> paste this repo URL.
+# After deploy: copy the backend URL into Vercel frontend env VITE_API_URL=https://<name>.onrender.com/api
+services:
+  - type: web
+    name: bankprepare-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bankprepare-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        sync: false # set to your Vercel URL, e.g. https://bankprepare.vercel.app
+      - key: GEMINI_API_KEY
+        sync: false # optional; AI tutor uses built-in answers without it
+
+databases:
+  - name: bankprepare-db
+    plan: free

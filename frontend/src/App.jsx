@@ -20,6 +20,7 @@ import LeaderboardPage from "./pages/Leaderboard";
 import AppShell from "./components/layout/AppShell";
 import { useTheme } from "./context/ThemeContext";
 import { useAuth } from "./context/AuthContext";
+import { API_URL } from "./utils/constants";
 
 // ---- Landing (premium dark) ----
 function Landing({ setPage }) {
@@ -843,17 +844,29 @@ function Login({ setPage, onLogin }) {
   const [pwd, setPwd] = useState("demo123");
   const [msg, setMsg] = useState("");
   const submit = async ()=>{
-    setMsg("Connecting to POST /api/auth/login …");
+    setMsg(`Connecting to POST ${API_URL}/auth/login …`);
     try{
       const r = await loginApi({email, password:pwd});
       const token = r.access_token || r.token;
+      if(!token) throw new Error("No token in response");
       localStorage.setItem("bp_token", token);
       localStorage.setItem("bp_user", JSON.stringify(r.user));
       setMsg("✅ " + r.message + " - token saved. Redirecting…");
       if(onLogin) onLogin();
       setTimeout(()=>setPage("dashboard"), 800);
     } catch(e){
-      setMsg("❌ " + (e.response?.data?.detail || e.message));
+      const status = e.response?.status;
+      const data = e.response?.data;
+      let reason = data?.detail || e.message;
+      if(status === 500 && !data?.detail){
+        reason = typeof data === "string" && !data.trim().startsWith("<")
+          ? `Server error: ${data.slice(0, 160)}`
+          : `Server error (HTTP 500, no JSON detail — backend crashed or VITE_API_URL points nowhere. API=${API_URL})`;
+      }
+      if(!e.response && e.message?.toLowerCase().includes("timeout")){
+        reason = `Backend did not respond in 30s (cold start?). API=${API_URL} — retry once.`;
+      }
+      setMsg("❌ " + reason);
     }
   };
   return <div className="container" style={{maxWidth:440}}><div className="card" style={{marginTop:24}}><h3 style={{textAlign:"center"}}>Welcome back</h3><p style={{textAlign:"center", color:"var(--text-muted)", fontSize:12, marginTop:4}}>Login to access your premium preparation workspace</p>
