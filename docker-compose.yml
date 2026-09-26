@@ -1,0 +1,60 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bankprepare-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # fallback if .env missing (sqlite for local, override to postgres in prod)
+      DATABASE_URL: ${DATABASE_URL:-sqlite:///./bankprepare.db}
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY must be set}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
+    ports:
+      - "8000:8000"
+    volumes:
+      # persist sqlite file; for postgres remove this and use db service
+      - ./backend/bankprepare.db:/app/bankprepare.db
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/health').getcode()==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: bankprepare-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      VITE_API_URL: http://backend:8000
+
+  # Optional: uncomment for production Postgres
+  # db:
+  #   image: postgres:16-alpine
+  #   container_name: bankprepare-db
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_USER: bankprepare
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bankprepare123}
+  #     POSTGRES_DB: bankprepare
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U bankprepare"]
+  #     interval: 10s
+  #     retries: 5
+
+# volumes:
+#   pgdata:

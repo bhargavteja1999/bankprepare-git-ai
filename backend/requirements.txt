@@ -1,0 +1,21 @@
+fastapi==0.115.12
+uvicorn[standard]==0.34.0
+python-multipart==0.0.9
+pydantic==2.11.7
+pydantic-settings==2.8.1
+sqlalchemy==2.0.41
+# FIX: passlib+bcrypt 4.0.1 is broken (AttributeError: __about__). Pin bcrypt to 4.1.1 and use compatible passlib
+passlib[bcrypt]==1.7.4
+bcrypt==4.1.1
+# python-jose is unmaintained; keep pinned but consider migrating to PyJWT
+python-jose[cryptography]==3.5.0
+python-dotenv==1.1.1
+email-validator==2.2.0
+# Added: needed by gemini_client.py placeholder and future AI features
+google-generativeai==0.8.4
+# Added: migrations & prod server
+alembic==1.15.2
+gunicorn==23.0.0
+httpx==0.27.2
+slowapi==0.1.9
+limits==3.13.0
