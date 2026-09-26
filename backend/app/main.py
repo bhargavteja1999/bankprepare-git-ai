@@ -160,8 +160,16 @@ def seed_db():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db()
-    seed_db()
+    # Never let a DB/seed failure take down the whole API (was: every
+    # request 500s on Vercel when sqlite is read-only or Postgres is down).
+    try:
+        init_db()
+    except Exception as e:
+        print(f"startup init_db failed (set a writable DATABASE_URL): {e}")
+    try:
+        seed_db()
+    except Exception as e:
+        print(f"startup seed_db failed: {e}")
     yield
 
 app = FastAPI(title=settings.APP_NAME+" API", version="4.0.0", lifespan=lifespan)

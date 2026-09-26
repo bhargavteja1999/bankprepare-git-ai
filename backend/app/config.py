@@ -11,7 +11,9 @@ class Settings(BaseSettings):
     CORS_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
     APP_NAME: str = "BankPrepare AI"
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    # Works whether the process starts in repo root or in backend/ (uvicorn
+    # backend.app.main:app vs uvicorn app.main:app). Real env vars always win.
+    model_config = SettingsConfigDict(env_file=("backend/.env", ".env"), env_file_encoding="utf-8", extra="ignore")
 
     @field_validator("SECRET_KEY")
     @classmethod

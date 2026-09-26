@@ -4,9 +4,11 @@ python-multipart==0.0.9
 pydantic==2.11.7
 pydantic-settings==2.8.1
 sqlalchemy==2.0.41
-# FIX: passlib+bcrypt 4.0.1 is broken (AttributeError: __about__). Pin bcrypt to 4.1.1 and use compatible passlib
-passlib[bcrypt]==1.7.4
+# NOTE: passlib is intentionally NOT used (breaks with bcrypt>=4.1: missing __about__).
+# Password hashing uses bcrypt directly in app/utils/security.py (compatible with $2b$ hashes).
 bcrypt==4.1.1
+# Postgres driver - required when DATABASE_URL is postgresql:// (e.g. Neon/Supabase on Vercel)
+psycopg2-binary==2.9.10
 # python-jose is unmaintained; keep pinned but consider migrating to PyJWT
 python-jose[cryptography]==3.5.0
 python-dotenv==1.1.1
